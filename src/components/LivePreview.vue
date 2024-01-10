@@ -149,7 +149,7 @@ import { useRoute, useRouter } from 'vue-router';
           <img src="/icons/record-circle-red.svg" alt="record-circle-red" />
           <span>Live Preview</span>
         </div>
-        <video id="screen" ref="combinedVideo" autoplay controls></video>
+        <video id="screen" height="490" ref="combinedVideo" autoplay controls></video>
       </div>
       <div class="d-flex">
         <!-- <button v-show="isRecording" class="btn btn-red mr-3" @click="stopRecording">Stop Recording</button> -->
