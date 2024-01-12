@@ -14,6 +14,7 @@ import { useRoute, useRouter } from 'vue-router';
   const cameraVideo = ref(null);
   const recordingSize = ref(0);
   const isRecording = ref(null)
+  const savedRecordingBlob = ref(null)
 
   const screenRecordingVal = screenRecording === 'true'
   const videoRecordingVal = videoRecording === 'true'
@@ -80,6 +81,7 @@ import { useRoute, useRouter } from 'vue-router';
           recording.value = false;
           const blob = new Blob(recordedChunks.value, { type: 'video/webm' });
           const videoUrl = URL.createObjectURL(blob);
+          savedRecordingBlob.value = blob
           // Save or process the combined recorded video
           console.log('Combined recorded video URL:', videoUrl);
           combinedVideo.value.src = videoUrl;
@@ -109,18 +111,49 @@ import { useRoute, useRouter } from 'vue-router';
     }
 
     const saveRecording = async() => {
-        // const recording = {
-        //     title: `Recording ${Math.floor(Math.random() * 100) + 1}`,
-        //     no_of_views: Math.floor(Math.random() * 100) + 1,
-        //     size: `${recordingSize.value} MB`,
-        //     date: new  Date(),
-        //     recording: url
-        // }
-        
-        // const newRecording = await addRecording(recording)    
-        // emit("recording-success", newRecording)
-        alert("Recording  saved successfully")
-        router.push('/')
+      try {
+            const fileHandle = await window.showSaveFilePicker({
+              suggestedName: `recording${Math.floor(Math.random() * 100) + 1}.webm`,
+              types: [{
+                  description: 'WebM Files',
+                  accept: { 'video/webm': ['.webm'] },
+              }],
+            });
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(savedRecordingBlob.value);
+            await writable.close();
+
+            // Get the URL for the saved file
+            // savedRecordingUrl.value = URL.createObjectURL(blob);
+            window.alert("Recording  saved successfully")
+            router.push('/')
+        } catch (error) {
+            console.error('Error saving file to FileSystem:', error);
+        }
+    }
+
+    //Save recording to FileSystem
+    const saveToFileSystem = async(blob) => {
+        try {
+            const fileHandle = await window.showSaveFilePicker({
+            suggestedName: `recording${Math.floor(Math.random() * 100) + 1}.webm`,
+            types: [{
+                description: 'WebM Files',
+                accept: { 'video/webm': ['.webm'] },
+            }],
+            });
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+
+            // Get the URL for the saved file
+            savedRecordingUrl.value = URL.createObjectURL(blob);
+            console.log('URL of the recorded video:', savedRecordingUrl.value);
+        } catch (error) {
+            console.error('Error saving file to FileSystem:', error);
+        }
     }
 
     startMediaRecording()
